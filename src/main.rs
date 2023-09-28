@@ -11,13 +11,16 @@ async fn main() {
     let callback_verifier = verifier.clone();
 
 
+    //auth route
     let auth = warp::path("auth").map(move || {
         let uri = iridium_client::authenticate_with_external_redirect(auth_verifier.clone());
             warp::redirect(uri.unwrap())
     });
 
 
+    //callback route
     let callback = warp::path("callback").and(warp::query::<HashMap<String, String>>()).and_then( move |params: HashMap<String, String>| {
+        //returnes Future<Option<String>> where string is the access token
         let response =  iridium_client::callback_service::callback_service::handle_callback(params, callback_verifier.clone());
         async {
             if let Ok(res) = response.await {
